@@ -79,7 +79,7 @@ void loop() {
 
   // Check if any reads failed and exit early (to try again).
   if (isnan(hum) || isnan(cels) || isnan(dist) ) {
-    Serial.println(F("Failed to read from DHT sensor!"));
+    Serial.println(F("Failed to read from sensor!"));
     return;
   }
 
