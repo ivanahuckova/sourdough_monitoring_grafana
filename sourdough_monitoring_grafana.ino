@@ -1,15 +1,11 @@
 #include <Arduino.h>
-#include <WiFi.h>
-#include <NTPClient.h>
-
+#include <Prometheus.h>
+#include <bearssl_x509.h>
 #include <DHT.h>
 #include <HCSR04.h>
 
+#include "certificates.h"
 #include "config.h"
-
-// NTP Client
-WiFiUDP ntpUDP;
-NTPClient ntpClient(ntpUDP);
 
 // DHT Sensor
 DHT dht(DHTPIN, DHTTYPE);
@@ -17,23 +13,57 @@ DHT dht(DHTPIN, DHTTYPE);
 // Ultrasonic Sensor
 UltraSonicDistanceSensor distanceSensor(ULTRASONIC_PIN_TRIG, ULTRASONIC_PIN_ECHO);  
 
+// Prometheus client
+Prometheus client;
+// Create a write request for 4 series
+WriteRequest req(4, 1024);
+
+// Create a labelset arrays for the 2 labels that is going to be used for all series
+LabelSet label_set[] = {{ "monitoring_type", "sourdough" }, { "board_type", "esp32-devkit1" }};
+
+// Define a TimeSeries which can hold up to 5 samples, has a name of `temperature/humidity/...` and uses the above labels of which there are 2
+TimeSeries ts1(5, "temperature_celsius", label_set, 2);
+TimeSeries ts2(5, "humidity_percent", label_set, 2);
+TimeSeries ts3(5, "heat_index_celsius", label_set, 2);
+TimeSeries ts4(5, "height_centimeter", label_set, 2);
+
+int loopCounter = 0;
+
 // Function to set up the connection to the WiFi
-void setupWiFi() {
-  Serial.print("Connecting to '");
-  Serial.print(WIFI_SSID);
-  Serial.print("' ...");
+void setupClient() {
+    Serial.println("Setting up client...");
 
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    // Configure the client
+    client.setUrl(GC_URL);
+    client.setPath(GC_PATH);
+    client.setPort(GC_PORT);
+    client.setUser(GC_USER);
+    client.setPass(GC_PASS);
+    client.setUseTls(true);
+    client.setCerts(TAs, TAs_NUM);
+    client.setWifiSsid(WIFI_SSID);
+    client.setWifiPass(WIFI_PASSWORD);
+    client.setDebug(Serial);  // Remove this line to disable debug logging of the client.
+    if (!client.begin()){
+        Serial.println(client.errmsg);
+    }
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+    // Add our TimeSeries to the WriteRequest
+    req.addTimeSeries(ts1);
+    req.addTimeSeries(ts2);
+    req.addTimeSeries(ts3);
+    req.addTimeSeries(ts4);
+    req.setDebug(Serial);  // Remove this line to disable debug logging of the write request serialization and compression.
+}
 
-  Serial.println("connected");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+// Get height of starter
+float getHeight() {
+  float height_from_bottom = 16.50;
+  float height = height_from_bottom - distanceSensor.measureDistanceCm();
+  if (height > 0) {
+    return height;
+  };
+  return 0;
 }
 
 
@@ -43,11 +73,8 @@ void setup() {
   // Start the serial output at 115,200 baud
   Serial.begin(115200);
 
-  // Connect to WiFi
-  setupWiFi();
-
-  // Initialize a NTPClient to get time
-  ntpClient.begin();
+  // Set up client
+  setupClient();
 
   // Start the DHT sensor
   dht.begin();
@@ -56,44 +83,65 @@ void setup() {
 
 // LOOP: Function called in a loop to read from sensors and send them do databases
 void loop() {
-  // Reconnect to WiFi if required
-  if (WiFi.status() != WL_CONNECTED) {
-    WiFi.disconnect();
-    yield();
-    setupWiFi();
-  }
-
-  // Update time via NTP if required
-  while(!ntpClient.update()) {
-    yield();
-    ntpClient.forceUpdate();
-  }
-
-  // Get current timestamp
-  unsigned long ts = ntpClient.getEpochTime();
+  int64_t time;
+  time = client.getTimeMillis();
 
   // Read temperature, humidity and distance
   float hum = dht.readHumidity();
   float cels = dht.readTemperature();
-  double dist = distanceSensor.measureDistanceCm();
+  float height = getHeight();
 
   // Check if any reads failed and exit early (to try again).
-  if (isnan(hum) || isnan(cels) || isnan(dist) ) {
+  if (isnan(hum) || isnan(cels) || isnan(height) ) {
     Serial.println(F("Failed to read from sensor!"));
     return;
   }
 
   // Compute heat index in Celsius (isFahreheit = false)
-  float hic = dht.computeHeatIndex(cels, hum, false);
+  int hic = dht.computeHeatIndex(cels, hum, false);
 
-  Serial.println(ts);
-  Serial.println(cels);
-  Serial.println(hum);
-  Serial.println(hic);
-  Serial.println(dist);
-  Serial.println("==============");
+  if (loopCounter >= 5) {
+    //Send
+    loopCounter = 0;
+    if (!client.send(req)) {
+      Serial.println(client.errmsg);
+    }
+    // Reset batches after a succesful send.
+    ts1.resetSamples();
+    ts2.resetSamples();
+    ts3.resetSamples();
+    ts4.resetSamples();
+  }
+  else {
+    if (!ts1.addSample(time, cels)) {
+      Serial.println(ts1.errmsg);
+    }
+    if (!ts2.addSample(time, hum)) {
+      Serial.println(ts2.errmsg);
+    }
+    if (!ts3.addSample(time, hic)) {
+      Serial.println(ts3.errmsg);
+    }
+    if (!ts4.addSample(time, height)) {
+      Serial.println(ts2.errmsg);
+    }
+    loopCounter++;
+  }
 
-  // wait INTERVAL seeconds and then do it again
+  // wait INTERVAL seconds and then do it again
   delay(INTERVAL * 1000);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
