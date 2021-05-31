@@ -77,23 +77,16 @@ float getHeight() {
 // ========== MAIN FUNCTIONS: SETUP & LOOP ========== 
 // SETUP: Function called at boot to initialize the system
 void setup() {
-  // Start the serial output at 115,200 baud
   Serial.begin(115200);
-
-  // Set up client
   setupClient();
-
-  // Start the DHT sensor
   dht.begin();
 }
-
 
 // LOOP: Function called in a loop to read from sensors and send them do databases
 void loop() {
   int64_t time;
   time = transport.getTimeMillis();
 
-  // Read temperature, humidity and distance
   float hum = dht.readHumidity();
   float cels = dht.readTemperature();
   float height = getHeight();
@@ -104,7 +97,6 @@ void loop() {
     return;
   }
 
-  // Compute heat index in Celsius (isFahreheit = false)
   int hic = dht.computeHeatIndex(cels, hum, false);
 
   if (loopCounter >= 5) {
