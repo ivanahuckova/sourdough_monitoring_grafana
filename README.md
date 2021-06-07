@@ -28,9 +28,8 @@ Plus:
 
 ## Libraries:
 
-- **DHT sensor library by** Adafruit
 - **Adafruit Unified Sensor** by Adafruit
-- **NTP Client** by Fabrice Weinberg
+- **DHT sensor library by** Adafruit
 - **HCSR04** by Martin Sosic
 
 ## Circuit & Wiring diagrams
