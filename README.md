@@ -8,7 +8,7 @@ This project was part of **[GrafanaCONline 2021 Easy DIY IoT projects with Grafa
 
 ## Arduino & Grafana
 
-To start, review and follow steps in the **[Grafana DIY IoT repo](https://github.com/grafana/diy-iot/blob/main/README.md)**.
+To start, review and follow steps in the **[Grafana DIY IoT repo](https://github.com/grafana/diy-iot)**.
 
 ## Hardware
 
