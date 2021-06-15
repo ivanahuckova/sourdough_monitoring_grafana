@@ -1,7 +1,6 @@
 #include <Arduino.h>
-#include <ArduinoBearSSL.h>
 #include <PromLokiTransport.h>
-#include <Prometheus.h>
+#include <PrometheusArduino.h>
 #include <DHT.h>
 #include <HCSR04.h>
 
@@ -22,20 +21,26 @@ PromClient client(transport);
 WriteRequest req(4, 2048);
 
 // Define a TimeSeries which can hold up to 5 samples
-TimeSeries ts1(5, "temperature_celsius", "monitoring_type=\"sourdough\",board_type=\"esp32_devkit1\",sourdough_type=\"rye\"");
-TimeSeries ts2(5, "humidity_percent", "monitoring_type=\"sourdough\",board_type=\"esp32_devkit1\",sourdough_type=\"rye\"");
-TimeSeries ts3(5, "heat_index_celsius", "monitoring_type=\"sourdough\",board_type=\"esp32_devkit1\",sourdough_type=\"rye\"");
-TimeSeries ts4(5, "height_centimeter", "monitoring_type=\"sourdough\",board_type=\"esp32_devkit1\",sourdough_type=\"rye\"");
+TimeSeries ts1(5, "temperature_celsius", "{monitoring_type=\"sourdough\",board_type=\"esp32_devkit1\",sourdough_type=\"rye\"}");
+TimeSeries ts2(5, "humidity_percent", "{monitoring_type=\"sourdough\",board_type=\"esp32_devkit1\",sourdough_type=\"rye\"}");
+TimeSeries ts3(5, "heat_index_celsius", "{monitoring_type=\"sourdough\",board_type=\"esp32_devkit1\",sourdough_type=\"rye\"}");
+TimeSeries ts4(5, "height_centimeter", "{monitoring_type=\"sourdough\",board_type=\"esp32_devkit1\",sourdough_type=\"rye\"}");
 
 int loopCounter = 0;
 
 // Function to set up Prometheus client
 void setupClient() {
   Serial.println("Setting up client...");
+
+  uint8_t serialTimeout;
+  while (!Serial && serialTimeout < 50) {
+    delay(100);
+    serialTimeout++;
+  }
   
   // Configure and start the transport layer
   transport.setUseTls(true);
-  transport.setCerts(TAs, TAs_NUM);
+  transport.setCerts(grafanaCert, strlen(grafanaCert));
   transport.setWifiSsid(WIFI_SSID);
   transport.setWifiPass(WIFI_PASSWORD);
   transport.setDebug(Serial);  // Remove this line to disable debug logging of the client.

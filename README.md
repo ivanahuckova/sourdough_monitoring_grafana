@@ -22,15 +22,21 @@ To build this system, you will need:
 - **1 USB charger**
 
 Plus:
+
 - **1 jar** for your sourdough starter, with a lid you can cut
 
 ![Image of hardware](imgs/setup.jpg)
 
 ## Libraries:
 
-- **Adafruit Unified Sensor** by Adafruit
 - **DHT sensor library by** Adafruit
 - **HCSR04** by Martin Sosic
+- **Adafruit Unified Sensor** by Adafruit
+- **ArduinoBearSSL** by Arduino
+- **ArduinoHttpClient** by Arduino
+- **PrometheusArduino** by Ed Welch
+- **PromLokiTransport** by Ed Welch
+- **SnappyProto** by Ed Welch
 
 ## Circuit & Wiring diagrams
 
@@ -40,6 +46,4 @@ Plus:
 
 Download this repo that includes the software for sourdough monitoring. Update config.h file with your names, passwords and API keys. Upload software to your board using Arduino IDE.
 
- ![Grafana dashboard](imgs/monitor.jpg)
-
-
+![Grafana dashboard](imgs/monitor.jpg)
