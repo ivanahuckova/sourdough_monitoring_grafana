@@ -25,7 +25,7 @@ Plus:
 
 - **1 jar** for your sourdough starter, with a lid you can cut
 
-<img width="979" alt="fritzing" src="https://user-images.githubusercontent.com/30407135/158403161-720d760d-cade-457f-bc50-0f6194811fbb.png">
+![Image of hardware](imgs/setup.jpg)
 
 ## Libraries:
 
