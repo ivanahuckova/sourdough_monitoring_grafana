@@ -40,7 +40,7 @@ Plus:
 
 ## Circuit & Wiring diagrams
 
-<img src="imgs/wire_diagram.png" width="700">
+<img src="imgs/wire_diagram_fritzing.png" width="700">
 
 ## Software
 
