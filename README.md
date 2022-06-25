@@ -2,7 +2,7 @@
 
 The Sourdough starter monitoring system helps you make more data driven decisions when it comes to your bread making. It monitors your sourdough starter’s height, temperature, and humidity, and sends data straight to Grafana Cloud's Loki and Prometheus. You can then visualise your data in Grafana's dashboard and set up alerts that will notify you when is the best time to feed your starter.
 
-This project was part of **[GrafanaCONline 2021 Easy DIY IoT projects with Grafana](https://grafana.com/go/grafanaconline/2021/diy-iot/)** session.
+This project was part of **[GrafanaCONline 2021 Easy DIY IoT projects with Grafana](https://grafana.com/go/grafanaconline/2021/diy-iot/)** session. You can also read blog post on [How to monitor a sourdough starter with Prometheus and Grafana Cloud](https://grafana.com/blog/2022/06/09/how-to-monitor-a-sourdough-starter-with-prometheus-and-grafana-cloud/).
 
 ![Image of how the system looks](imgs/grafana.jpg)
 
